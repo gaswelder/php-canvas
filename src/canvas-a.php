@@ -2,6 +2,10 @@
 
 namespace gaswelder;
 
+class Exception extends \Exception
+{
+}
+
 abstract class canvas_a
 {
 	protected $img;
