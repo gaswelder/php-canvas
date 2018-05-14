@@ -2,7 +2,7 @@
 
 namespace gaswelder;
 
-abstract class canvas_b extends canvas_a
+trait Transforms
 {
 	/*
 	 * Current transformation matrix.

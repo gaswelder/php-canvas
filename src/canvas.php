@@ -2,101 +2,120 @@
 
 namespace gaswelder;
 
-require __DIR__ . '/canvas-a.php';
-require __DIR__ . '/canvas-b.php';
-require __DIR__ . '/canvas-shapes.php';
+require __DIR__ . '/shapes.php';
+require __DIR__ . '/transforms.php';
+require __DIR__ . '/text.php';
 
-class Canvas extends canvas_shapes
+class Exception extends \Exception
 {
-	/**
-	 * @var string
-	 * Horizontal alignment of rendered text: 'start', 'center', 'right', 'end'.
-	 */
-	public $textAlign = 'start';
+}
 
-	/**
-	 * @var string
-	 * Vertical alignment of rendered text: 'top', 'middle', 'bottom'.
-	 */
-	public $textBaseline = 'alphabetic';
+class Canvas
+{
+	protected $img;
+	private $width;
+	private $height;
+	private $colors = [];
 
-	public $font = '10px ' . __DIR__ . '/pt-sans.regular.ttf';
+	use Transforms, Shapes, Text;
 
-	/**
-	 * Renders filled text at the given position.
-	 *
-	 * @param string $text
-	 * @param float $x
-	 * @param float $y
-	 */
-	function fillText($text, $x, $y)
+	function __construct($width, $height)
 	{
-		list($width, $height) = $this->label_size($text);
+		$this->width = $width;
+		$this->height = $height;
+		$this->img = $this->check(imagecreate($width, $height), 'imagecreate');
 
-		$xpos = [
-			'left' => 0,
-			'start' => 0,
-			'center' => $width / 2,
-			'right' => $width,
-			'end' => $width
-		];
-		$ypos = [
-			'top' => -$height,
-			'hanging' => -$height,
-			'middle' => -$height / 2,
-			'bottom' => 0,
-			'alphabetic' => 0,
-			'ideographic' => 0
-		];
+		$white = $this->getColor("#eeeeee");
+		$this->check(imagefill($this->img, 1, 1, $white), 'imagefill');
+	}
 
-		if (!isset($xpos[$this->textAlign])) {
-			throw new Exception("Unknown textAlign value: " . $this->textAlign);
+	function __destruct()
+	{
+		imagedestroy($this->img);
+	}
+
+	function width()
+	{
+		return $this->width;
+	}
+
+	function height()
+	{
+		return $this->height;
+	}
+
+	protected function check($result, $name)
+	{
+		if ($result === false) {
+			throw new Exception("$name call failed");
 		}
-		if (!isset($ypos[$this->textBaseline])) {
-			throw new Exception("Unknown textBaseline value: " . $this->textBaseline);
-		}
-		$x -= $xpos[$this->textAlign];
-		$y -= $ypos[$this->textBaseline];
+		return $result;
+	}
 
-		$a = $this->matrix[0][0];
-		$b = $this->matrix[1][0];
-		$angle = -atan2($b, $a) / PI * 180;
+	function save($path)
+	{
+		$this->check(imagepng($this->img, $path, 9), 'imagepng');
+	}
 
-		list($x, $y) = $this->calc($x, $y);
-		list($fontSize, $fontFile) = explode(' ', $this->font);
-		$fontSize = str_replace('px', '', $fontSize);
-		$color = $this->getColor($this->fillStyle);
-		$r = imagettftext($this->img, $fontSize, $angle, $x, $y, $color, $fontFile, $text);
-		$this->check($r, 'imagettftext');
-		return $r;
+	function data()
+	{
+		ob_start();
+		$this->check(imagepng($this->img), 'imagepng');
+		return ob_get_clean();
+	}
+
+	function paste(canvas $c, $x, $y)
+	{
+		$this->check(imagecopy($this->img, $c->img, $x, $y, 0, 0, $c->width, $c->height), 'imagecopy');
 	}
 
 	/*
-	 * Returns the size of the text's bounding rectangle.
+	 * Returns a color index for the GD library.
+	 * $spec is in format #rrggbb, where rr, gg, and bb are hexademical
+	 * numbers from 00 to ff. Case doesn't matter. The short form #rgb,
+	 * equivalent to #rrggbb: #abc = #aabbcc, is also accepted.
 	 */
-	private function label_size($text)
+	protected function getColor($spec)
 	{
-		list($fontSize, $fontFile) = explode(' ', $this->font);
-		$fontSize = str_replace('px', '', $fontSize);
+		// If a name is given, convert it to a hex. code.
+		if ($spec[0] != '#') {
+			$spec = $this->namedColor($spec);
+		}
+		if (!isset($this->colors[$spec])) {
+			$this->colors[$spec] = $this->hex_color($spec);
+		}
+		return $this->colors[$spec];
+	}
 
-		// Since we need to measure only the text itself regardless of the angle,
-		// we set angle to zero here.
-		$angle = 0;
-		$r = imagettfbbox($fontSize, $angle, $fontFile, $text);
+	private function hex_color($spec)
+	{
+		$spec = substr($spec, 1);
 
-		$i = 0;
-		$pos = [
-			'lowerLeft' => [$r[$i++], $r[$i++]],
-			'lowerRight' => [$r[$i++], $r[$i++]],
-			'upperRight' => [$r[$i++], $r[$i++]],
-			'upperLeft' => [$r[$i++], $r[$i++]],
-		];
+		$n = strlen($spec);
+		assert($n == 6 || $n == 3);
 
-		$width = abs($pos['lowerRight'][0] - $pos['lowerLeft'][0]);
-		// It's unclear what their problem is, but "upper" actually "lower",
-		// so we get negative height if we follow the documentaion.
-		//$height = abs($pos['upperLeft'][1] - $pos['lowerLeft'][1]);
+		if ($n == 3) {
+			$spec = "$spec[0]$spec[0]$spec[1]$spec[1]$spec[2]$spec[2]";
+		}
+		list($r, $g, $b) = array_map('hexdec', str_split($spec, 2));
+		$color = imagecolorallocate($this->img, $r, $g, $b);
+		$this->check($color, 'imagecolorallocate');
+		return $color;
+	}
 
-		return [$width, $fontSize];
+	private function namedColor($name)
+	{
+		static $map = array(
+			'black' => '#000000',
+			'white' => '#ffffff',
+			'gray' => '#999999',
+			'red' => '#ff0000',
+			'green' => '#00ff00',
+			'blue' => '#0000ff'
+		);
+		if (!isset($map[$name])) {
+			throw new Exception("Unknown color name: '$name'");
+		}
+		return $map[$name];
 	}
 }

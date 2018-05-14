@@ -2,7 +2,7 @@
 
 namespace gaswelder;
 
-abstract class canvas_shapes extends canvas_b
+trait Shapes
 {
 	public $fillStyle = 'black';
 	public $strokeStyle = 'black';
