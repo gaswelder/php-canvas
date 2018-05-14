@@ -20,7 +20,7 @@ class Canvas extends canvas_shapes
 	 */
 	public $textBaseline = 'alphabetic';
 
-	public $font = '10px sans-serif';
+	public $font = '10px ' . __DIR__ . '/pt-sans.regular.ttf';
 
 	/**
 	 * Renders filled text at the given position.
