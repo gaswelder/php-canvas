@@ -16,7 +16,12 @@ trait Text
 	 */
 	public $textBaseline = 'alphabetic';
 
-	public $font = '10px ' . __DIR__ . '/pt-sans.regular.ttf';
+	/**
+	 * @var string
+	 * Font specification in form "size path". For example, "10px /foo/bar.ttf".
+	 * If path is 'sans-serif', an internal font is used.
+	 */
+	public $font = '10px sans-serif';
 
 	/**
 	 * Renders filled text at the given position.
@@ -59,12 +64,21 @@ trait Text
 		$angle = -atan2($b, $a) / PI * 180;
 
 		list($x, $y) = $this->calc($x, $y);
-		list($fontSize, $fontFile) = explode(' ', $this->font);
-		$fontSize = str_replace('px', '', $fontSize);
+		list($fontSize, $fontFile) = $this->getFont();
 		$color = $this->getColor($this->fillStyle);
 		$r = imagettftext($this->img, $fontSize, $angle, $x, $y, $color, $fontFile, $text);
 		$this->check($r, 'imagettftext');
 		return $r;
+	}
+
+	private function getFont()
+	{
+		list($fontSize, $fontFile) = explode(' ', $this->font);
+		$fontSize = str_replace('px', '', $fontSize);
+		if ($fontFile == 'sans-serif') {
+			$fontFile = __DIR__ . '/pt-sans.regular.ttf';
+		}
+		return [$fontSize, $fontFile];
 	}
 
 	/*
@@ -72,8 +86,7 @@ trait Text
 	 */
 	private function label_size($text)
 	{
-		list($fontSize, $fontFile) = explode(' ', $this->font);
-		$fontSize = str_replace('px', '', $fontSize);
+		list($fontSize, $fontFile) = $this->getFont();
 
 		// Since we need to measure only the text itself regardless of the angle,
 		// we set angle to zero here.
