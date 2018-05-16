@@ -77,6 +77,9 @@ class Canvas
 	 */
 	protected function getColor($spec)
 	{
+		if (strpos($spec, 'rgb(') === 0) {
+			$spec = $this->parseRGB($spec);
+		}
 		// If a name is given, convert it to a hex. code.
 		if ($spec[0] != '#') {
 			$spec = $this->namedColor($spec);
@@ -85,6 +88,14 @@ class Canvas
 			$this->colors[$spec] = $this->hex_color($spec);
 		}
 		return $this->colors[$spec];
+	}
+
+	private function parseRGB($spec)
+	{
+		if (!preg_match('/rgb\((\d+),\s*(\d+),\s*(\d+)\)/', $spec, $m)) {
+			throw new Exception("couldn't parse color string: '$spec'");
+		}
+		return '#' . sprintf('%02s', dechex($m[1])) . sprintf('%02s', dechex($m[2])) . sprintf('%02s', dechex($m[3]));
 	}
 
 	private function hex_color($spec)
