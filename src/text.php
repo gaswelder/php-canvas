@@ -71,6 +71,14 @@ trait Text
 		return $r;
 	}
 
+	function measureText($text)
+	{
+		list($width) = $this->label_size($text);
+		$metrics = new \StdClass;
+		$metrics->width = $width;
+		return $metrics;
+	}
+
 	private function getFont()
 	{
 		list($fontSize, $fontFile) = explode(' ', $this->font);
