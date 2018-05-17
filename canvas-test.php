@@ -6,6 +6,11 @@ use gaswelder\Canvas;
 
 define('PI', acos(-1));
 
+function d($var)
+{
+	echo json_encode($var, JSON_PRETTY_PRINT), "\n";
+}
+
 $mask = isset($argv[1]) ? $argv[1] : '';
 foreach (glob("tests/*$mask*.php") as $path) {
 	$func = require $path;
