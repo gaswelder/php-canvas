@@ -13,7 +13,7 @@ trait Shapes
 	private $path = [];
 
 	/**
-	 * Starts a new path.
+	 * Discards the current list of subpaths and starts a new path.
 	 */
 	function beginPath()
 	{
@@ -48,6 +48,9 @@ trait Shapes
 		$this->path[$n - 1][] = [$x, $y];
 	}
 
+	/**
+	 * Closes current subpath by adding a line to its first point.
+	 */
 	function closePath()
 	{
 		$n = count($this->path);
