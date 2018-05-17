@@ -8,7 +8,8 @@ define('PI', acos(-1));
 
 function d($var)
 {
-	echo json_encode($var, JSON_PRETTY_PRINT), "\n";
+	static $c = 0;
+	echo $c++, ': ', json_encode($var, JSON_PRETTY_PRINT), "\n";
 }
 
 $mask = isset($argv[1]) ? $argv[1] : '';
