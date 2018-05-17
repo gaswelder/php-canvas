@@ -39,10 +39,23 @@ trait Shapes
 		$this->lineTo($x, $y);
 	}
 
+	/**
+	 * Fills a rectangle. Does not affect the current path.
+	 *
+	 * @param float $x
+	 * @param float $y
+	 * @param float $width
+	 * @param float $height
+	 */
 	function fillRect($x, $y, $width, $height)
 	{
-		$this->rect($x, $y, $width, $height);
-		$this->fill();
+		$points = [
+			$this->calc($x + $width, $y),
+			$this->calc($x + $width, $y + $height),
+			$this->calc($x, $y + $height),
+			$this->calc($x, $y)
+		];
+		$this->polyFill($points);
 	}
 
 	function strokeRect($x, $y, $width, $height)

@@ -74,10 +74,19 @@ trait Paths
 	function fill()
 	{
 		foreach ($this->path as $points) {
-			$flatCoords = call_user_func_array('array_merge', $points);
-			$r = imagefilledpolygon($this->img, $flatCoords, count($points), $this->getColor($this->fillStyle));
-			$this->check($r, 'imagefilledpolygon');
+			$this->polyFill($points);
 		}
+	}
+
+	/*
+	 * Takes an array of [x, y] points and fills the shape it defines.
+	 * There's no need to close the path for this function.
+	 */
+	private function polyFill($points)
+	{
+		$flatCoords = call_user_func_array('array_merge', $points);
+		$r = imagefilledpolygon($this->img, $flatCoords, count($points), $this->getColor($this->fillStyle));
+		$this->check($r, 'imagefilledpolygon');
 	}
 
 	private function polyLine($points)
