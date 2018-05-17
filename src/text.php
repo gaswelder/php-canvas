@@ -61,7 +61,7 @@ trait Text
 
 		$a = $this->matrix[0][0];
 		$b = $this->matrix[1][0];
-		$angle = -atan2($b, $a) / PI * 180;
+		$angle = rad2deg(-atan2($b, $a));
 
 		list($x, $y) = $this->calc($x, $y);
 		list($fontSize, $fontFile) = $this->getFont();
