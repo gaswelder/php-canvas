@@ -8,7 +8,7 @@ $star = function ($canvas, $x, $y) {
 
 	$points = [];
 	for ($i = 0; $i < 10; $i++) {
-		$angle = $i * (2 * PI) / 10;
+		$angle = $i * (2 * deg2rad(180)) / 10;
 		$r = $i % 2 == 0 ? $r1 : $r2;
 		$points[] = [
 			$x + $r * sin($angle),
@@ -32,7 +32,7 @@ return function (Canvas $canvas) use ($star) {
 	$r = 60;
 
 	for ($i = 0; $i < 12; $i++) {
-		$angle = 2 * PI / 12 * $i;
+		$angle = 2 * deg2rad(180) / 12 * $i;
 		$star($canvas, 135 + $r * sin($angle), 90 + $r * cos($angle));
 	}
 };

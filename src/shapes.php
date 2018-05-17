@@ -78,12 +78,12 @@ trait Shapes
 		$angles = [];
 		if ($anticlockwise) {
 			while ($startAngle <= $endAngle) {
-				$startAngle += 2 * PI;
+				$startAngle += deg2rad(360);
 			}
 			$angles = range($startAngle, $endAngle, -0.1);
 		} else {
 			while ($endAngle <= $startAngle) {
-				$endAngle += 2 * PI;
+				$endAngle += deg2rad(360);
 			}
 			$angles = range($startAngle, $endAngle, 0.1);
 		}
